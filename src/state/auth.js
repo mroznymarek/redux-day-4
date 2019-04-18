@@ -8,14 +8,14 @@ export const startListeningToAuthChangeAsyncActionCreator = (
     () => (dispatch, getState) => {
         auth.onAuthStateChanged(
             (user) => {
-              if (user) {
-                // dispatch({ isUserLoggedIn: true })
-              } else {
+                if (user) {
+                    // dispatch({ isUserLoggedIn: true })
+                } else {
+                }
                 console.log(user)
-                dispatch(setUserActionCreator())
+                dispatch(setUserActionCreator(user))
             }
-        }
-        ) 
+        )
     }
 )
 
@@ -28,6 +28,18 @@ export const logInAsyncActionCreator = () => (dispatch, getState) => {
         .then(() => console.log('ZALOGOWANO'))
         .catch((error) => console.log('WYSTĄPIŁ BŁĄD', error))
 }
+
+export const logInGoogleAsyncActionCreator = () => (dispatch, getState) => {
+    auth.signInWithPopup(googleProvider)
+        .then(() => console.log('ZALOGOWANO'))
+        .catch((error) => console.log('WYSTĄPIŁ BŁĄD', error))
+}
+
+export const logOut = () => (dispatch, getState) => {
+    auth.signOut()
+}
+
+
 
 const setUserActionCreator = user => ({
     type: SET_USER,
@@ -64,8 +76,8 @@ export default (state = initialState, action) => {
             }
         case SET_USER:
             return {
-              ...state,
-              user: action.user,
+                ...state,
+                user: action.user,
             }
         default:
             return state
