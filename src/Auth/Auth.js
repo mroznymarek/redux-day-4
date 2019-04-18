@@ -1,25 +1,44 @@
-import React from 'react' 
-import Forms from './Forms'
+import React from 'react'
 
+import { connect } from 'react-redux'
+import { emailChangedActionCreator, passChangedActionCreator } from '../state/auth'
+
+import Forms from './Forms'
 
 const Auth = (props) => (
     <div>
         {props._user ?
             props.children
             :
-            <Forms 
-                email={''}
-                password={''}
+            <Forms
+                email={props._email}
+                password={props._password}
 
-                onEmailChange={() => {}}
-                onPasswordChange={() => {}}
+                onEmailChange={props._onEmailChange}
+                onPasswordChange={props._onPasswordChange}
 
-                onLogInClick={() => {}}
+                onLogInClick={() => { }}
 
-                onLogInByGoogleClick={() => {}}
+                onLogInByGoogleClick={() => { }}
             />
         }
     </div>
 )
 
-export default Auth
+const mapStateToProps = state => ({
+    _user: state.auth._user,
+    _email: state.auth._email,
+    _password: state.auth._password,
+})
+
+const mapDispatchToProps = dispatch => ({
+    _onEmailChange: (event) => dispatch(emailChangedActionCreator(event.target.value)),
+    _onPasswordChange: (event) => dispatch(passChangedActionCreator(event.target.value))
+})
+
+
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(Auth)
