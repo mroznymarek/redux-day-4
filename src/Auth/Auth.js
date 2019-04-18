@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react' 
+import Forms from './Forms'
 
 
 const Auth = (props) => (
@@ -6,7 +7,17 @@ const Auth = (props) => (
         {props._user ?
             props.children
             :
-            <Forms />
+            <Forms 
+                email={''}
+                password={''}
+
+                onEmailChange={() => {}}
+                onPasswordChange={() => {}}
+
+                onLogInClick={() => {}}
+
+                onLogInByGoogleClick={() => {}}
+            />
         }
     </div>
 )
