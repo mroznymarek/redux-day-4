@@ -3,21 +3,66 @@ import { auth, googleProvider, database } from '../firebaseConf'
 const EMAIL_CHANGED = 'auth/EMAIL_CHANGED'
 const PASS_CHANGED = 'auth/PASS_CHANGED'
 const SET_USER = 'auth/SET_USER'
+const SET_USER_LOGINS_LOGS = 'auth/SET_USER_LOGINS_LOGS'
 
 export const startListeningToAuthChangeAsyncActionCreator = (
     () => (dispatch, getState) => {
         auth.onAuthStateChanged(
             (user) => {
-                if (user) {
-                    // dispatch({ isUserLoggedIn: true })
-                } else {
-                }
                 console.log(user)
-                dispatch(setUserActionCreator(user))
+
+                if (user) {
+                    dispatch(setUserActionCreator(user))
+                    dispatch(passChangedActionCreator(''))
+                    dispatch(emailChangedActionCreator(''))
+                    dispatch(logUserLoginAsyncActionCreator())
+                    dispatch(startListeningUsersLoginsLogAsyncActionCreator())
+                } else {
+                    dispatch(stopListeningUsersLoginsLogAsyncActionCreator())
+                    dispatch(setUsersLogInLogsActionCreator(null))
+                    dispatch(setUserActionCreator(user))
+                }
             }
         )
     }
 )
+
+export const stopListeningUsersLoginsLogAsyncActionCreator = (
+    () => (dispatch, getState) => {
+        const state = getState()
+        const userId = state.auth.user.uid
+        database.ref(`users/${userId}/login`).off()
+    }
+)
+
+export const startListeningUsersLoginsLogAsyncActionCreator = (
+    () => (dispatch, getState) => {
+        const state = getState()
+        const userId = state.auth.user.uid
+
+        database.ref(`users/${userId}/login`)
+            .on(
+                'value',
+                (snapshot) => {
+                    dispatch(
+                        setUsersLogInLogsActionCreator(
+                            snapshot.val()
+                        )
+                    )
+                }
+            )
+    }
+)
+
+export const logUserLoginAsyncActionCreator = () => (dispatch, getState) => {
+    const state = getState()
+    const userId = state.auth.user.uid
+
+    database.ref(`users/${userId}/login`)
+        .push({
+            timestamp: Date.now(),
+        })
+}
 
 export const logInAsyncActionCreator = () => (dispatch, getState) => {
     const state = getState()
@@ -39,7 +84,10 @@ export const logOut = () => (dispatch, getState) => {
     auth.signOut()
 }
 
-
+const setUsersLogInLogsActionCreator = data => ({
+    type: SET_USER_LOGINS_LOGS,
+    data,
+})
 
 const setUserActionCreator = user => ({
     type: SET_USER,
@@ -57,6 +105,7 @@ export const passChangedActionCreator = newValue => ({
 })
 
 const initialState = {
+    userLoginsLog: null,
     user: null,
     email: '',
     password: '',
@@ -78,6 +127,12 @@ export default (state = initialState, action) => {
             return {
                 ...state,
                 user: action.user,
+            }
+        case SET_USER_LOGINS_LOGS:
+            return {
+                ...state,
+                userLoginsLog: action.data,
+
             }
         default:
             return state
